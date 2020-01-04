@@ -24,15 +24,22 @@ public class Model {
         }
     }
 
+    private void notifyObserversFresh(ArrayList<String> messages) {
+        for (Client observer: observers) {
+            observer.updateFresh(this, messages);
+        }
+    }
+
     public void setModel(ArrayList<String> messages) {
         this.messages = messages;
         this.modelSet = true;
 
         if (messages.size() != 0) {
-            notifyObservers(messages);
+            notifyObserversFresh(messages);
         }
 
     }
+
 
     public boolean isModelSet() {
         return modelSet;
