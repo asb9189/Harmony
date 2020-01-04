@@ -37,11 +37,14 @@ public class Client extends Application {
         ip = args.get(0);
         port = Integer.parseInt(args.get(1));
 
+        System.out.println("Attempting to connect");
         try {
             socket = new Socket(ip, port);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        System.out.println("Connected");
 
         model = new Model();
         model.addObserver(this);
@@ -49,10 +52,11 @@ public class Client extends Application {
         Thread thread = new Thread(networkClient);
         thread.start();
 
+        textArea = new TextArea();
+        textArea.setDisable(true);
+
         //Request an updated model
         networkClient.sendRequest(new Request(Request.RequestType.REQUEST_MODEL, null));
-
-        textArea = new TextArea("Text Area");
 
         while (!model.isModelSet()) {
             System.out.println("model not set");
@@ -64,7 +68,7 @@ public class Client extends Application {
     public void start(Stage stage) throws Exception {
 
        borderPane = new BorderPane();
-       textField = new TextField("my text field");
+       textField = new TextField();
        borderPane.setCenter(textArea);
        borderPane.setBottom(textField);
        send = new Button("Send");
@@ -101,5 +105,12 @@ public class Client extends Application {
         this.model = model;
         textArea.appendText("\n" + messages.get(messages.size() - 1));
 
+    }
+
+    public void updateFresh(Model model, ArrayList<String> messages) {
+        this.model = model;
+        for (String s : messages) {
+            textArea.appendText("\n" + s);
+        }
     }
 }
