@@ -81,6 +81,7 @@ public class Client extends Application {
        borderPane.setCenter(textArea);
        borderPane.setBottom(textField);
        send = new Button("Send");
+       send.setDefaultButton(true);
        send.setOnAction( (actionEvent -> {
            Request<String> request = new Request<>(Request.RequestType.SEND_MESSAGE, textField.getText());
            networkClient.sendRequest(request);
