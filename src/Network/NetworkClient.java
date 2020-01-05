@@ -38,7 +38,7 @@ public class NetworkClient implements Runnable {
     @Override
     public void run() {
 
-        while (true) {
+        while (socket.isConnected() && !socket.isClosed()) {
 
             try {
                 Request<?> request = (Request<?>) inputStream.readUnshared();
@@ -46,19 +46,28 @@ public class NetworkClient implements Runnable {
                     continue;
                 } else if (request.getType() == Request.RequestType.CHANGE) {
 
-                    System.out.println("Adding message to model");
                     model.addMessage((String) request.getData());
 
                 } else if (request.getType() == Request.RequestType.MODEL) {
                     model.setModel((ArrayList<String>) request.getData());
+                } else if (request.getType() == Request.RequestType.ERROR) {
+                    System.exit(0);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                closeCommunications();
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
 
         }
+    }
 
+    private void closeCommunications() {
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.exit(0);
     }
 }
