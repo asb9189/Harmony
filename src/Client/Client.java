@@ -8,9 +8,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
+import javax.sound.sampled.*;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -30,6 +33,7 @@ public class Client extends Application {
     private Scene scene;
     private TextField textField;
     private Button send;
+    private ToggleButton notificationSound;
 
     public void init() {
 
@@ -41,6 +45,13 @@ public class Client extends Application {
         }
 
         username = login.getUsername().strip();
+
+        //Prevent the user from messing with the notification check
+        //A colon in a username also looks awful
+        if (username.contains(":")) {
+            System.exit(0);
+        }
+
         ip = login.getIp().strip();
         port = Integer.parseInt(login.getPort());
 
@@ -80,6 +91,9 @@ public class Client extends Application {
        textField = new TextField();
        borderPane.setCenter(textArea);
        borderPane.setBottom(textField);
+       notificationSound = new ToggleButton();
+       notificationSound.setSelected(true);
+       borderPane.setLeft(notificationSound);
        send = new Button("Send");
        send.setDefaultButton(true);
        send.setOnAction( (actionEvent -> {
@@ -102,8 +116,37 @@ public class Client extends Application {
     public void update(Model model, ArrayList<String> messages) {
 
         this.model = model;
-        textArea.appendText("\n" + messages.get(messages.size() - 1));
 
+        //check if new message is my own. If it is don't play the notification sound!
+
+        String lastMessage = messages.get(messages.size() - 1);
+
+        try {
+            if ( !(this.username.equals(lastMessage.substring(0, lastMessage.indexOf(":")))) && notificationSound.isSelected() ) {
+                try {
+                    AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File("windows_xp.wav").getAbsoluteFile());
+                    Clip clip = null;
+                    try {
+                        clip = AudioSystem.getClip();
+                    } catch (LineUnavailableException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        clip.open(audioInputStream);
+                    } catch (LineUnavailableException e) {
+                        e.printStackTrace();
+                    }
+                    clip.start();
+                } catch (UnsupportedAudioFileException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (StringIndexOutOfBoundsException e) {
+            //do nothing
+        }
+        textArea.appendText("\n" + lastMessage);
     }
 
     public void updateFresh(Model model, ArrayList<String> messages) {
