@@ -4,6 +4,7 @@ import Network.NetworkClient;
 import Network.Request;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -92,7 +93,13 @@ public class Client extends Application {
        borderPane.setCenter(textArea);
        borderPane.setBottom(textField);
        notificationSound = new ToggleButton();
+
+       notificationSound.setOnAction( (e) -> {
+           notificationSound.setText("Play Notification Sounds: " + notificationSound.isSelected());
+       });
+
        notificationSound.setSelected(true);
+       notificationSound.setText("Play Notification Sounds: " + notificationSound.isSelected());
        borderPane.setLeft(notificationSound);
        send = new Button("Send");
        send.setDefaultButton(true);
@@ -104,8 +111,11 @@ public class Client extends Application {
        borderPane.setRight(send);
 
        scene = new Scene(borderPane);
+       borderPane.setPadding(new Insets(10, 10, 10, 10));
        stage.setScene(scene);
-
+       stage.setMinWidth(250);
+       stage.setMinHeight(250);
+       stage.setResizable(true);
        stage.show();
     }
 
