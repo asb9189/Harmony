@@ -40,10 +40,8 @@ public class Client extends Application {
             Thread.yield();
         }
 
-        System.out.println("Login Sucess");
-
-        username = login.getUsername();
-        ip = login.getIp();
+        username = login.getUsername().strip();
+        ip = login.getIp().strip();
         port = Integer.parseInt(login.getPort());
 
         System.out.println(username);
@@ -73,9 +71,6 @@ public class Client extends Application {
         while (!model.isModelSet()) {
             Thread.yield();
         }
-
-        System.out.println("good to go!");
-
     }
 
     @Override
@@ -89,6 +84,7 @@ public class Client extends Application {
        send.setOnAction( (actionEvent -> {
            Request<String> request = new Request<>(Request.RequestType.SEND_MESSAGE, textField.getText());
            networkClient.sendRequest(request);
+           textField.setText("");
        }));
        borderPane.setRight(send);
 
