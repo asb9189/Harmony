@@ -1,7 +1,6 @@
 package Server;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -54,9 +53,6 @@ public class Server {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-
-
         }
     }
 
@@ -75,6 +71,10 @@ public class Server {
 
     public boolean addUsername(String username) {
         return usernames.add(username);
+    }
+
+    public int getPort() {
+        return this.port;
     }
 
     public static void main(String[] args) {
