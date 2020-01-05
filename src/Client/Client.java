@@ -117,14 +117,6 @@ public class Client extends Application {
     }
 
     public static void main(String[] args) {
-
-        // Args: Hostname Port
-
-        if (args.length != 2) {
-            System.out.println("Command Usage: IP Port");
-            System.exit(0);
-        }
-
         Application.launch(args);
     }
 }
