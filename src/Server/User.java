@@ -7,6 +7,7 @@ import java.net.Socket;
 
 public class User implements Runnable {
 
+    private String username;
     private Socket socket;
     private Server server;
     private ObjectOutputStream outputStream;
@@ -23,6 +24,10 @@ public class User implements Runnable {
         }
     }
 
+    public String getUsername() {
+        return this.username;
+    }
+
     public ObjectOutputStream getOutputStream() {
         return outputStream;
     }
@@ -30,7 +35,7 @@ public class User implements Runnable {
     @Override
     public void run() {
 
-        while (true) {
+        while (socket.isConnected() && !socket.isClosed()) {
 
             try {
                 Request<?> request = (Request<?>) inputStream.readUnshared();
@@ -39,7 +44,7 @@ public class User implements Runnable {
                 } else if (request.getType() == Request.RequestType.SEND_MESSAGE) {
 
                     //send the string to be added to the server
-                    server.addMessage((String) request.getData());
+                    server.addMessage(this.username + ": " + (String) request.getData());
 
                     //update all users
                     for (User user : server.getActiveUsers()) {
@@ -47,7 +52,43 @@ public class User implements Runnable {
                     }
 
                 } else if (request.getType() == Request.RequestType.REQUEST_MODEL) {
-                    outputStream.writeObject(new Request<>(Request.RequestType.MODEL, server.getModelFromServer()));
+
+                    //Set the username of the user
+                    this.username = (String) request.getData();
+
+                    //Check if username is available
+                    //if its not send back a Request object telling the user to disconnect
+
+                    if (server.addUsername(this.username)) {
+                        outputStream.writeObject(new Request<>(Request.RequestType.MODEL, server.getModelFromServer()));
+
+                        //update all users who connected
+                        for (User user : server.getActiveUsers()) {
+
+                            //Skip this message if your the one connecting
+                            if (user.getUsername().equals(this.username)) {
+                                continue;
+                            }
+                            user.getOutputStream().writeObject(new Request<>(Request.RequestType.CHANGE, this.username + " connected"));
+                        }
+
+                    } else {
+                        server.removeUser(this);
+                        outputStream.writeObject(new Request<>(Request.RequestType.ERROR, null));
+                        socket.close();
+                    }
+                } else if (request.getType() == Request.RequestType.DISCONNECT) {
+
+                    System.out.println(username + " is disconnecting");
+
+                    //update all users who disconnected
+                    for (User user : server.getActiveUsers()) {
+                        user.getOutputStream().writeObject(new Request<>(Request.RequestType.CHANGE, this.username + " disconnected"));
+                    }
+
+                    server.removeUser(this);
+                    outputStream.writeObject(new Request<>(Request.RequestType.ERROR, null));
+                    socket.close();
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -56,6 +97,8 @@ public class User implements Runnable {
             }
 
         }
+
+        //The connection has been lost remove user from active users and disconnect
 
     }
 }
