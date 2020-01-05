@@ -5,10 +5,12 @@ import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class Server {
 
     private int port;
+    private HashSet<String> usernames;
     private ServerSocket serverSocket;
     private ArrayList<User> activeUsers;
     private ArrayList<String> messages;
@@ -19,6 +21,7 @@ public class Server {
         this.port = port;
         activeUsers = new ArrayList<User>();
         messages = new ArrayList<>();
+        usernames = new HashSet<>();
 
         try {
             serverSocket = new ServerSocket(port);
@@ -51,11 +54,15 @@ public class Server {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+
+
         }
     }
 
-    public boolean removeUser(User user) {
-        return activeUsers.remove(user);
+    public void removeUser(User user) {
+        usernames.remove(user.getUsername());
+        activeUsers.remove(user);
     }
 
     public ArrayList<String> getModelFromServer(){
@@ -64,6 +71,10 @@ public class Server {
 
     public ArrayList<User> getActiveUsers() {
         return activeUsers;
+    }
+
+    public boolean addUsername(String username) {
+        return usernames.add(username);
     }
 
     public static void main(String[] args) {
