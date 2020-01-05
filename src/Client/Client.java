@@ -3,22 +3,21 @@ import Model.Model;
 import Network.NetworkClient;
 import Network.Request;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.List;
 
 public class Client extends Application {
 
+    private String username;
     private String ip;
     private int port;
     private Socket socket;
@@ -33,18 +32,30 @@ public class Client extends Application {
     private Button send;
 
     public void init() {
-        List< String > args = getParameters().getRaw();
-        ip = args.get(0);
-        port = Integer.parseInt(args.get(1));
 
-        System.out.println("Attempting to connect");
+        LoginWindow login = new LoginWindow();
+        Platform.runLater(login::display);
+
+        while (!login.getFinished()) {
+            Thread.yield();
+        }
+
+        System.out.println("Login Sucess");
+
+        username = login.getUsername();
+        ip = login.getIp();
+        port = Integer.parseInt(login.getPort());
+
+        System.out.println(username);
+        System.out.println(ip);
+        System.out.println(port);
+
         try {
             socket = new Socket(ip, port);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Failed to connect");
+            System.exit(0);
         }
-
-        System.out.println("Connected");
 
         model = new Model();
         model.addObserver(this);
@@ -54,13 +65,16 @@ public class Client extends Application {
 
         textArea = new TextArea();
         textArea.setDisable(true);
+        textArea.setStyle("-fx-opacity: 1");
 
         //Request an updated model
-        networkClient.sendRequest(new Request(Request.RequestType.REQUEST_MODEL, null));
+        networkClient.sendRequest(new Request(Request.RequestType.REQUEST_MODEL, username));
 
         while (!model.isModelSet()) {
-            System.out.println("model not set");
+            Thread.yield();
         }
+
+        System.out.println("good to go!");
 
     }
 
@@ -85,19 +99,7 @@ public class Client extends Application {
     }
 
     public void stop() {
-
-    }
-
-    public static void main(String[] args) {
-
-        // Args: Hostname Port
-
-        if (args.length != 2) {
-            System.out.println("Command Usage: IP Port");
-            System.exit(0);
-        }
-
-        Application.launch(args);
+        networkClient.sendRequest(new Request(Request.RequestType.DISCONNECT, null));
     }
 
     public void update(Model model, ArrayList<String> messages) {
@@ -112,5 +114,17 @@ public class Client extends Application {
         for (String s : messages) {
             textArea.appendText("\n" + s);
         }
+    }
+
+    public static void main(String[] args) {
+
+        // Args: Hostname Port
+
+        if (args.length != 2) {
+            System.out.println("Command Usage: IP Port");
+            System.exit(0);
+        }
+
+        Application.launch(args);
     }
 }
