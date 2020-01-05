@@ -24,17 +24,18 @@ public class Server {
 
         try {
             serverSocket = new ServerSocket(port);
+            System.out.println("Server started on port: " + this.port);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
     }
 
-    public void addMessage(String msg) {
+    public synchronized void addMessage(String msg) {
         messages.add(msg);
     }
 
-    public String getLastMessage() {
+    public synchronized String getLastMessage() {
         return messages.get(messages.size() - 1);
     }
 
@@ -56,24 +57,24 @@ public class Server {
         }
     }
 
-    public void removeUser(User user) {
+    public synchronized void removeUser(User user) {
         usernames.remove(user.getUsername());
         activeUsers.remove(user);
     }
 
-    public ArrayList<String> getModelFromServer(){
+    public synchronized ArrayList<String> getModelFromServer(){
         return messages;
     }
 
-    public ArrayList<User> getActiveUsers() {
+    public synchronized ArrayList<User> getActiveUsers() {
         return activeUsers;
     }
 
-    public boolean addUsername(String username) {
+    public synchronized boolean addUsername(String username) {
         return usernames.add(username);
     }
 
-    public int getPort() {
+    public synchronized int getPort() {
         return this.port;
     }
 

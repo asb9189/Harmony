@@ -24,13 +24,13 @@ public class Model {
         }
     }
 
-    private void notifyObserversFresh(ArrayList<String> messages) {
+    private synchronized void notifyObserversFresh(ArrayList<String> messages) {
         for (Client observer: observers) {
             observer.updateFresh(this, messages);
         }
     }
 
-    public void setModel(ArrayList<String> messages) {
+    public synchronized void setModel(ArrayList<String> messages) {
         this.messages = messages;
         this.modelSet = true;
 
@@ -41,15 +41,15 @@ public class Model {
     }
 
 
-    public boolean isModelSet() {
+    public synchronized boolean isModelSet() {
         return modelSet;
     }
 
-    public ArrayList<String> getMessages() {
+    public synchronized ArrayList<String> getMessages() {
         return messages;
     }
 
-    public void addMessage(String msg) {
+    public synchronized void addMessage(String msg) {
         messages.add(msg);
         notifyObservers(messages);
     }

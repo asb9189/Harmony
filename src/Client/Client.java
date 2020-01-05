@@ -74,7 +74,7 @@ public class Client extends Application {
         thread.start();
 
         textArea = new TextArea();
-        textArea.setDisable(true);
+        textArea.setEditable(false);
         textArea.setStyle("-fx-opacity: 1");
 
         //Request an updated model
@@ -104,9 +104,13 @@ public class Client extends Application {
        send = new Button("Send");
        send.setDefaultButton(true);
        send.setOnAction( (actionEvent -> {
-           Request<String> request = new Request<>(Request.RequestType.SEND_MESSAGE, textField.getText());
-           networkClient.sendRequest(request);
-           textField.setText("");
+
+           if (!textField.getText().isBlank()) {
+               Request<String> request = new Request<>(Request.RequestType.SEND_MESSAGE, textField.getText());
+               networkClient.sendRequest(request);
+               textField.setText("");
+           }
+
        }));
        borderPane.setRight(send);
 
