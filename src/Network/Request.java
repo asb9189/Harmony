@@ -9,11 +9,12 @@ public class Request<E extends Serializable> implements Serializable {
 
 
     public enum RequestType{
-        ERROR,
+        DISCONNECT,
         SEND_MESSAGE,
         CHANGE,
         REQUEST_MODEL,
-        MODEL
+        MODEL,
+        ERROR
     }
 
     public Request(RequestType type, E data) {
